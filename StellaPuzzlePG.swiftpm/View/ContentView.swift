@@ -4,7 +4,7 @@ struct ContentView: View {
     var body: some View {
         VStack {
             TabView{
-                Text("test")
+                PuzzleSelectView()
                     .tabItem {
                         Image(systemName: "moon.stars")
                         Text("Star Puzzle")
