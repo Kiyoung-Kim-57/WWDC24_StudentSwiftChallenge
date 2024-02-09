@@ -9,10 +9,10 @@ struct ContentView: View {
                         Image(systemName: "moon.stars")
                         Text("Star Puzzle")
                     }
-                Text("setting")
-                    .tabItem { 
-                        Image(systemName: "gearshape")
-                        Text("Setting")
+                Text("Info")
+                    .tabItem {
+                        Image(systemName: "quote.bubble")
+                        Text("Information")
                     }
             }
         }
@@ -22,3 +22,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+

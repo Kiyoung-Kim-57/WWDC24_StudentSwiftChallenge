@@ -17,8 +17,11 @@ class TheDipperViewModel: ObservableObject {
         .init(name: "Megrez", ApparentMagnitude: 3.3, distance: 58),
         .init(name: "Alioth", ApparentMagnitude: 1.8, distance: 81),
         .init(name: "Mizar", ApparentMagnitude: 2.1, distance: 78),
-        .init(name: "Alkaid", ApparentMagnitude: 1.9, distance: 101)
+        .init(name: "Alkaid", ApparentMagnitude: 1.85, distance: 101)
     ]) {
         self.starsArray = starsArray
     }
 }
+
+
+

@@ -8,11 +8,17 @@
 import SwiftUI
 
 struct TheDipperView: View {
+    @ObservedObject var theDipper: TheDipperViewModel
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        List{
+            ForEach(theDipper.starsArray, id: \.self){ value in
+                Text("\(value.name) " + "거리는 \(value.distance) " + "겉보기 등급은 <\(value.ApparentMagnitude)> " + "절대 등급은 " + value.magnitude)
+            }
+        }
     }
 }
 
 #Preview {
-    TheDipperView()
+    TheDipperView(theDipper: TheDipperViewModel())
+        .previewInterfaceOrientation(.landscapeLeft)
 }
