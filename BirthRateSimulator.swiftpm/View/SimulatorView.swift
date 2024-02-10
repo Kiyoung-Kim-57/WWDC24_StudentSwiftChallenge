@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SimulatorView: View {
+    @ObservedObject var resultViewModel: ResultViewModel = ResultViewModel()
     @State var population: CGFloat = 0
     @State var totalFertilityRate: CGFloat = 0
     @State var isCalculating: Bool = false
@@ -19,12 +20,14 @@ struct SimulatorView: View {
             HStack{
                 Spacer()
                 CalculatorView(
+                    resultViewModel: resultViewModel ,
                     population: $population,
                     totalFertilityRate: $totalFertilityRate,
                     isCalculating: $isCalculating,
                     repeatCount: $repeatCount
                 )
             }
+            
             FigureView(
                 population: $population,
                 totalFertilityRate: $totalFertilityRate,
@@ -166,12 +169,14 @@ private struct FigureView: View {
 }
 
 private struct CalculatorView: View {
+    @ObservedObject var resultViewModel: ResultViewModel
     @Binding var population: CGFloat
     @Binding var totalFertilityRate: CGFloat
     @Binding var isCalculating: Bool
     @Binding var repeatCount: Int
     @State var result: CGFloat = 0
     @State var fontSize = UIScreen.width * 0.001
+    @State var resultModel: ResultModel = .init(population: 0, totalFertilityRate: 0)
     
     var numberFormatter: NumberFormatter {
         let formatter = NumberFormatter()
@@ -197,7 +202,7 @@ private struct CalculatorView: View {
                     Text("Present Population")
                         .font(.system(size: fontSize * 30))
                         .bold()
-                        .padding(.top, 20)
+                        .padding(.top, 30)
                     TextField("Present Population", value: $population, formatter: numberFormatter)
                         .font(.system(size: fontSize * 20))
                         .bold()
@@ -219,10 +224,14 @@ private struct CalculatorView: View {
             Spacer()
             
             Button(action: {
-//                result = (population / 2) * totalFertilityRate
-//                population = result
+                //Append present population and TFR value in ViewModel
+                resultModel = .init(population: Int(population), totalFertilityRate: totalFertilityRate)
+                resultViewModel.resultArray.append(resultModel)
+                //Trigger of start of animation
                 isCalculating.toggle()
+                //To prevent playing animation twice
                 repeatCount = 0
+                //After 7 Secs reset values for next step
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 7, execute: {
                     repeatCount += 1
                     isCalculating.toggle()
@@ -241,7 +250,7 @@ private struct CalculatorView: View {
                             .foregroundStyle(Color.gray)
                     }
             })
-            .padding(.bottom, 10)
+            .padding(.bottom, 30)
             .padding(.leading, UIScreen.width * 0.1)
         }
         .frame(width: UIScreen.main.bounds.width * 0.35)

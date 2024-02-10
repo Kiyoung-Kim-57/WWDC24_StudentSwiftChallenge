@@ -2,14 +2,18 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        NavigationView(content: {
-            List {
-                NavigationLink(destination: SimulatorView()
-                    .ignoresSafeArea()) { Text("Simulator") }
-                
+        NavigationSplitView{
+            List{
+                NavigationLink{
+                    SimulatorView()
+                        .ignoresSafeArea()
+                } label: { Text("Simulator") }
             }
-            .navigationTitle("Menu")
-        })
+        } detail: {
+            Text("Birth Rate Simulator")
+        }
+            
+            
     }
 }
 
