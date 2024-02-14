@@ -8,15 +8,33 @@
 import Foundation
 
 class ResultModel {
+    var nthGen: Int
     var population: Int
     var totalFertilityRate: CGFloat
     
-    init(population: Int, totalFertilityRate: CGFloat) {
+    init(nthGen: Int, population: Int, totalFertilityRate: CGFloat) {
+        self.nthGen = nthGen
         self.population = population
         self.totalFertilityRate = totalFertilityRate
     }
 }
 
-class ResultViewModel: ObservableObject {
-    @Published var resultArray: [ResultModel] = []
+extension ResultModel: Hashable {
+    static func == (lhs: ResultModel, rhs: ResultModel) -> Bool {
+        if lhs.nthGen == rhs.nthGen && lhs.population == rhs.population && lhs.totalFertilityRate == rhs.totalFertilityRate {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(nthGen)
+        hasher.combine(population)
+        hasher.combine(totalFertilityRate)
+    }
 }
+
+
+
+

@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct SimulatorView: View {
-    @ObservedObject var resultViewModel: ResultViewModel = ResultViewModel()
+    @ObservedObject var resultViewModel: ResultViewModel 
     @State var population: CGFloat = 0
     @State var totalFertilityRate: CGFloat = 0
+    @State var genCount: Int = 0
     @State var isCalculating: Bool = false
     @State var repeatCount: Int = 0
     
@@ -24,8 +25,16 @@ struct SimulatorView: View {
                     population: $population,
                     totalFertilityRate: $totalFertilityRate,
                     isCalculating: $isCalculating,
-                    repeatCount: $repeatCount
+                    repeatCount: $repeatCount,
+                    genCount: $genCount
                 )
+                .onAppear{
+                    if resultViewModel.isSimulating == true {
+                        population = resultViewModel.tmpPopulation
+                        totalFertilityRate = resultViewModel.tmpRate
+                        genCount = resultViewModel.tmpGen
+                    }
+                }
             }
             
             FigureView(
@@ -172,17 +181,17 @@ private struct CalculatorView: View {
     @ObservedObject var resultViewModel: ResultViewModel
     @Binding var population: CGFloat
     @Binding var totalFertilityRate: CGFloat
-    @Binding var isCalculating: Bool
+    @Binding var isCalculating: Bool //Trigger of animation
     @Binding var repeatCount: Int
+    @Binding var genCount: Int
     @State var result: CGFloat = 0
     @State var fontSize = UIScreen.width * 0.001
-    @State var resultModel: ResultModel = .init(population: 0, totalFertilityRate: 0)
+    @State var resultModel: ResultModel = .init(nthGen: 0, population: 0, totalFertilityRate: 0)
     
     var numberFormatter: NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .none
         formatter.zeroSymbol  = ""
-        formatter.maximumFractionDigits = 0
         return formatter
     }
     
@@ -190,7 +199,6 @@ private struct CalculatorView: View {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.zeroSymbol  = ""
-        formatter.maximumFractionDigits = 2
         return formatter
     }
     
@@ -203,7 +211,7 @@ private struct CalculatorView: View {
                         .font(.system(size: fontSize * 30))
                         .bold()
                         .padding(.top, 30)
-                    TextField("Present Population", value: $population, formatter: numberFormatter)
+                    TextField(resultViewModel.isSimulating ? "\(Int(resultViewModel.tmpPopulation))" : "Present Population", value: $population, formatter: numberFormatter)
                         .font(.system(size: fontSize * 20))
                         .bold()
                         .multilineTextAlignment(.trailing)
@@ -213,7 +221,7 @@ private struct CalculatorView: View {
                     Text("Total Fertility Rate")
                         .font(.system(size: fontSize * 30))
                         .bold()
-                    TextField("Total Fertility Rate(0.0~)", value: $totalFertilityRate, formatter: numberFormatter2)
+                    TextField(resultViewModel.isSimulating ? "\(resultViewModel.tmpRate)" :"Total Fertility Rate(0.0~)", value: $totalFertilityRate, formatter: numberFormatter2)
                         .font(.system(size: fontSize * 20))
                         .bold()
                         .multilineTextAlignment(.trailing)
@@ -224,8 +232,12 @@ private struct CalculatorView: View {
             Spacer()
             
             Button(action: {
+                //Turn on the simulating continuing check
+                resultViewModel.isSimulating = true
+                //Add generationCount number
+                genCount += 1
                 //Append present population and TFR value in ViewModel
-                resultModel = .init(population: Int(population), totalFertilityRate: totalFertilityRate)
+                resultModel = .init(nthGen: genCount ,population: Int(population), totalFertilityRate: totalFertilityRate)
                 resultViewModel.resultArray.append(resultModel)
                 //Trigger of start of animation
                 isCalculating.toggle()
@@ -237,6 +249,10 @@ private struct CalculatorView: View {
                     isCalculating.toggle()
                     result = (population / 2) * totalFertilityRate
                     population = result
+                    //Store tmpPopulation and tmpRate value
+                    resultViewModel.tmpPopulation = population
+                    resultViewModel.tmpRate = totalFertilityRate
+                    resultViewModel.tmpGen = genCount
                 })
                 
             }, label: {
@@ -260,9 +276,9 @@ private struct CalculatorView: View {
 }
 
 
-#Preview {
-    SimulatorView()
-}
+//#Preview {
+//    SimulatorView()
+//}
 
 
 
