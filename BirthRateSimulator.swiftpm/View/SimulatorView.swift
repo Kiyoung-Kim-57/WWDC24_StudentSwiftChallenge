@@ -28,6 +28,7 @@ struct SimulatorView: View {
                     repeatCount: $repeatCount,
                     genCount: $genCount
                 )
+                
                 .onAppear{
                     if resultViewModel.isSimulating == true {
                         population = resultViewModel.tmpPopulation
@@ -36,6 +37,7 @@ struct SimulatorView: View {
                     }
                 }
             }
+            .frame(height: UIScreen.height)
             
             FigureView(
                 population: $population,
@@ -43,6 +45,7 @@ struct SimulatorView: View {
                 isCalculating: $isCalculating,
                 repeatCount: $repeatCount
             )
+            .ignoresSafeArea()
             
         }
     }
@@ -184,8 +187,10 @@ private struct CalculatorView: View {
     @Binding var isCalculating: Bool //Trigger of animation
     @Binding var repeatCount: Int
     @Binding var genCount: Int
+    @State private var isShowPopulationPopUp: Bool = false
+    @State private var isShowTFRPopUp: Bool = false
     @State var result: CGFloat = 0
-    @State var fontSize = UIScreen.width * 0.001
+    @State var screenRatioSize = UIScreen.width * 0.001
     @State var resultModel: ResultModel = .init(nthGen: 0, population: 0, totalFertilityRate: 0)
     
     var numberFormatter: NumberFormatter {
@@ -205,24 +210,59 @@ private struct CalculatorView: View {
     var body: some View {
         VStack(spacing: 20){
             VStack(alignment:.trailing){
+                Spacer()
+                    .frame(height: screenRatioSize * 50)
                 //Default population set value
                 Group{
-                    Text("Present Population")
-                        .font(.system(size: fontSize * 30))
-                        .bold()
-                        .padding(.top, 30)
+                    HStack{
+                        Text("Present Population")
+                            .font(.system(size: screenRatioSize * 26))
+                            .bold()
+                        Button {
+                            self.isShowPopulationPopUp = true
+                        } label: {
+                            Image(systemName: "questionmark.circle")
+                                .font(.system(size: screenRatioSize * 30))
+                                .bold()
+                                .foregroundStyle(Color.gray)
+                        }
+                    }
+                    .popover(isPresented: $isShowPopulationPopUp) {
+                        Text("The Population of 15 to 49 Years Old\n(Consider this age group as one generation)")
+                            .font(.system(size: 20))
+                            .padding(5)
+                    }
+                    
+                    
+                    
                     TextField(resultViewModel.isSimulating ? "\(Int(resultViewModel.tmpPopulation))" : "Present Population", value: $population, formatter: numberFormatter)
-                        .font(.system(size: fontSize * 20))
+                        .font(.system(size: screenRatioSize * 20))
                         .bold()
                         .multilineTextAlignment(.trailing)
                 }
                 //TFR value
                 Group{
-                    Text("Total Fertility Rate")
-                        .font(.system(size: fontSize * 30))
-                        .bold()
+                    HStack{
+                        Text("Total Fertility Rate")
+                            .font(.system(size: screenRatioSize * 26))
+                            .bold()
+                        Button {
+                            isShowTFRPopUp = true
+                        } label: {
+                            Image(systemName: "questionmark.circle")
+                                .font(.system(size: screenRatioSize * 30))
+                                .bold()
+                                .foregroundStyle(Color.gray)
+                        }
+                    }
+                    .popover(isPresented: $isShowTFRPopUp) {
+                        Text("The average number of children that are born to a woman over her lifetime\n(Age 15 ~ 49)")
+                            .font(.system(size: 20))
+                            .padding(5)
+                    }
+                    
                     TextField(resultViewModel.isSimulating ? "\(resultViewModel.tmpRate)" :"Total Fertility Rate(0.0~)", value: $totalFertilityRate, formatter: numberFormatter2)
-                        .font(.system(size: fontSize * 20))
+                        .font(.system(size: screenRatioSize * 20))
                         .bold()
                         .multilineTextAlignment(.trailing)
                 }
@@ -257,7 +297,7 @@ private struct CalculatorView: View {
                 
             }, label: {
                 Text("Start Simulation")
-                    .font(.system(size:fontSize * 30))
+                    .font(.system(size:screenRatioSize * 30))
                     .bold()
                     .foregroundStyle(Color.white)
                     .padding(15)
@@ -276,9 +316,9 @@ private struct CalculatorView: View {
 }
 
 
-//#Preview {
-//    SimulatorView()
-//}
+#Preview {
+    SimulatorView(resultViewModel: ResultViewModel())
+}
 
 
 

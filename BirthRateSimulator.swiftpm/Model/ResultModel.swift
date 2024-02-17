@@ -10,7 +10,7 @@ import Foundation
 class ResultModel {
     var nthGen: Int
     var population: Int
-    var totalFertilityRate: CGFloat
+    var totalFertilityRate: Double
     
     init(nthGen: Int, population: Int, totalFertilityRate: CGFloat) {
         self.nthGen = nthGen
