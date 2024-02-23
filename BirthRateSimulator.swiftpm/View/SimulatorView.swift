@@ -9,15 +9,14 @@ import SwiftUI
 
 struct SimulatorView: View {
     @ObservedObject var resultViewModel: ResultViewModel 
-    @State var population: CGFloat = 0
+    @State var population: Double = 0
     @State var totalFertilityRate: CGFloat = 0
-    @State var genCount: Int = 0
+    @State var genCount: Int = 1
     @State var isCalculating: Bool = false
     @State var repeatCount: Int = 0
     
     var body: some View {
         ZStack{
-            
             HStack{
                 Spacer()
                 CalculatorView(
@@ -36,6 +35,13 @@ struct SimulatorView: View {
                         genCount = resultViewModel.tmpGen
                     }
                 }
+                .onChange(of: resultViewModel.tmpPopulation) { _ in
+                    if resultViewModel.tmpPopulation == 0 && resultViewModel.tmpGen == 0 {
+                        population = resultViewModel.tmpPopulation
+                        totalFertilityRate = resultViewModel.tmpRate
+                        genCount = resultViewModel.tmpGen
+                    }
+                }
             }
             .frame(height: UIScreen.height)
             
@@ -43,7 +49,8 @@ struct SimulatorView: View {
                 population: $population,
                 totalFertilityRate: $totalFertilityRate,
                 isCalculating: $isCalculating,
-                repeatCount: $repeatCount
+                repeatCount: $repeatCount,
+                genCount: $genCount
             )
             .ignoresSafeArea()
             
@@ -52,10 +59,11 @@ struct SimulatorView: View {
 }
 
 private struct FigureView: View {
-    @Binding var population: CGFloat
+    @Binding var population: Double
     @Binding var totalFertilityRate: CGFloat
     @Binding var isCalculating: Bool
     @Binding var repeatCount: Int
+    @Binding var genCount: Int
     @State var isFirstAction: Bool = false
     @State var isSecondAction: Bool = false
     @State var isThirdAction: Bool = false
@@ -64,6 +72,11 @@ private struct FigureView: View {
     @State var isSixthAction: Bool = false
     @State var tmpPopulation: CGFloat = 0
     
+    var ordinalFormatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .ordinal
+        return formatter
+    }
     
     var body: some View {
         HStack {
@@ -114,7 +127,6 @@ private struct FigureView: View {
             .padding(.leading, UIScreen.main.bounds.width * 0.25)
             //sequential animation codes
             .onChange(of: isCalculating, perform: { _ in
-                
                 //The first action of animation
                 if repeatCount < 1 { //This condition is for preventing replay of animation when initialize boolean values as false
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1, execute: {
@@ -167,13 +179,28 @@ private struct FigureView: View {
         }
         .background{
             HStack{
-                RoundedRectangle(cornerRadius: 50)
-                    .frame(width: isCalculating ? UIScreen.width * 1.3 : UIScreen.width * 0.8, height: UIScreen.height * 1.01)
-                    .foregroundStyle(Color.gray)
-                //TODO: delete opacity and set background color
-                    .offset(x: -UIScreen.width * 0.1)
-                    .animation(.easeOut, value: isCalculating)
-                    
+                ZStack{
+                    RoundedRectangle(cornerRadius: 50)
+                        .frame(width: isCalculating ? UIScreen.width * 1.3 : UIScreen.width * 0.8, height: UIScreen.height * 1.01)
+                        .foregroundStyle(Color.boxColor)
+                    //TODO: delete opacity and set background color
+                        .offset(x: -UIScreen.width * 0.1)
+                        .animation(.easeOut, value: isCalculating)
+                    VStack{
+                        HStack{
+                            Spacer()
+                                .frame(width: UIScreen.width * 0.45)
+                                
+                            Text(ordinalFormatter.string(for: genCount)!)
+                                .font(.system(size: 40))
+                                .bold()
+                                .padding(.top, 20)
+                                .opacity(isCalculating ? 0 : 1)
+                        }
+                            Spacer()
+                    }
+                }
+                
                 Spacer()
             }
         }
@@ -182,7 +209,7 @@ private struct FigureView: View {
 
 private struct CalculatorView: View {
     @ObservedObject var resultViewModel: ResultViewModel
-    @Binding var population: CGFloat
+    @Binding var population: Double
     @Binding var totalFertilityRate: CGFloat
     @Binding var isCalculating: Bool //Trigger of animation
     @Binding var repeatCount: Int
@@ -211,7 +238,16 @@ private struct CalculatorView: View {
         VStack(spacing: 20){
             VStack(alignment:.trailing){
                 Spacer()
-                    .frame(height: screenRatioSize * 50)
+                    .frame(height: screenRatioSize * 25)
+                Text("Simulator Input Manager")
+                    .font(.system(size: screenRatioSize * 22))
+                    .fontWeight(.heavy)
+                    
+                Divider()
+                    .tint(Color.black)
+                    .frame(minHeight: screenRatioSize )
+                    .padding(.bottom,screenRatioSize * 20)
+                    
                 //Default population set value
                 Group{
                     HStack{
@@ -238,7 +274,18 @@ private struct CalculatorView: View {
                     TextField(resultViewModel.isSimulating ? "\(Int(resultViewModel.tmpPopulation))" : "Present Population", value: $population, formatter: numberFormatter)
                         .font(.system(size: screenRatioSize * 20))
                         .bold()
+                        .background{
+                            HStack{
+                                Spacer()
+                                RoundedRectangle(cornerRadius: 10)
+                                    .padding(.trailing, -10)
+                                    .frame(width:screenRatioSize * 270 , height: screenRatioSize * 30)
+                                    .foregroundStyle(Color.white)
+                                    .shadow(color: Color.gray.opacity(0.3), radius: 5)
+                            }
+                        }
                         .multilineTextAlignment(.trailing)
+                        
                 }
                 //TFR value
                 Group{
@@ -264,21 +311,52 @@ private struct CalculatorView: View {
                     TextField(resultViewModel.isSimulating ? "\(resultViewModel.tmpRate)" :"Total Fertility Rate(0.0~)", value: $totalFertilityRate, formatter: numberFormatter2)
                         .font(.system(size: screenRatioSize * 20))
                         .bold()
+                        .background{
+                            HStack{
+                                Spacer()
+                                RoundedRectangle(cornerRadius: 10)
+                                    .padding(.trailing, -10)
+                                    .frame(width:screenRatioSize * 270 , height: screenRatioSize * 30)
+                                    .foregroundStyle(Color.white)
+                                    .shadow(color: Color.gray.opacity(0.3), radius: 5)
+                            }
+                        }
                         .multilineTextAlignment(.trailing)
                 }
                 
             }
             
             Spacer()
-            
+            //Reset Button
+            Button(action: {
+                resultViewModel.resultArray = []
+                resultViewModel.tmpRate = 0
+                resultViewModel.tmpPopulation = 0
+                resultViewModel.tmpGen = 0
+            }, label: {
+                Text("Reset Simulation")
+                    .frame(width: UIScreen.width * 0.23)
+                    .font(.system(size:screenRatioSize * 29))
+                    .bold()
+                    .foregroundStyle(Color.white)
+                    .padding(15)
+                    .background{
+                        RoundedRectangle(cornerRadius: 10)
+                            .foregroundStyle(Color.lineColor)
+                    }
+            })
+            .padding(.leading, UIScreen.width * 0.1)
+            //Simulation Start Button
             Button(action: {
                 //Turn on the simulating continuing check
                 resultViewModel.isSimulating = true
+                //Add First Generation resultModel
+                if genCount == 1 {
+                    resultModel = .init(nthGen: genCount ,population: Int(population), totalFertilityRate: totalFertilityRate)
+                    resultViewModel.resultArray.append(resultModel)
+                }
                 //Add generationCount number
                 genCount += 1
-                //Append present population and TFR value in ViewModel
-                resultModel = .init(nthGen: genCount ,population: Int(population), totalFertilityRate: totalFertilityRate)
-                resultViewModel.resultArray.append(resultModel)
                 //Trigger of start of animation
                 isCalculating.toggle()
                 //To prevent playing animation twice
@@ -293,20 +371,24 @@ private struct CalculatorView: View {
                     resultViewModel.tmpPopulation = population
                     resultViewModel.tmpRate = totalFertilityRate
                     resultViewModel.tmpGen = genCount
+                    //Append present population and TFR value in ViewModel
+                    resultModel = .init(nthGen: genCount ,population: Int(population), totalFertilityRate: totalFertilityRate)
+                    resultViewModel.resultArray.append(resultModel)
                 })
                 
             }, label: {
                 Text("Start Simulation")
+                    .frame(width: UIScreen.width * 0.23)
                     .font(.system(size:screenRatioSize * 30))
                     .bold()
                     .foregroundStyle(Color.white)
                     .padding(15)
                     .background{
                         RoundedRectangle(cornerRadius: 10)
-                            .foregroundStyle(Color.gray)
+                            .foregroundStyle(Color.black.opacity(0.7))
                     }
             })
-            .padding(.bottom, 30)
+            .padding(.bottom, 40)
             .padding(.leading, UIScreen.width * 0.1)
         }
         .frame(width: UIScreen.main.bounds.width * 0.35)

@@ -10,19 +10,28 @@ import Foundation
 class ResultViewModel: ObservableObject {
     
     @Published var resultArray: [ResultModel] = [
-        //Sample
+////        //Sample
         .init(nthGen: 1, population: 10000, totalFertilityRate: 0.7),
         .init(nthGen: 2, population: 3500, totalFertilityRate: 0.6),
-        .init(nthGen: 3, population: 1200, totalFertilityRate: 0.4)
+        .init(nthGen: 3, population: 3300, totalFertilityRate: 0.4)
     
     ]
-    @Published var tmpPopulation: CGFloat = .zero
+    @Published var tmpPopulation: Double = .zero
     @Published var tmpGen: Int = 0
     @Published var tmpRate: CGFloat = .zero
     @Published var isSimulating: Bool = false
     
     enum rangeError: Error {
         case rangeNotEnough
+    }
+    
+    class analyzedData {
+        var analyzedString: String
+        var isIncrease: Bool
+        init(analyzedString: String, isIncrease: Bool) {
+            self.analyzedString = analyzedString
+            self.isIncrease = isIncrease
+        }
     }
     
     func maxGen(_ array: [ResultModel]) throws -> Int {
@@ -41,6 +50,41 @@ class ResultViewModel: ObservableObject {
     func maxRate(_ array: [ResultModel]) -> Double {
         let tmp: [Double] = array.map{ $0.totalFertilityRate }
         return tmp.max() ?? 0
+    }
+    
+    func analyzePopulation(_ array: [ResultModel]) -> analyzedData {
+        let firstPopulation = Double(array[0].population)
+        let lastPopulation = Double(array[array.count - 1].population)
+        let change = (lastPopulation - firstPopulation) / firstPopulation * 100
+        if change < 0 {
+            return .init(analyzedString: "Decreased " + String(format: "%.f", change) + "%", isIncrease: false)
+            
+        } else if change == 0 {
+            return .init(analyzedString: "No Change", isIncrease: false)
+        } else {
+            return .init(analyzedString: "Increased " + String(format: "%.f", change) + "%", isIncrease: true)
+        }
+    }
+    
+    func analyzeTFR(_ array: [ResultModel]) -> analyzedData {
+        let firstTFR = Double(array[0].totalFertilityRate)
+        let lastTFR = Double(array[array.count - 1].totalFertilityRate)
+        let change = (lastTFR - firstTFR) / firstTFR * 100
+        if change < 0 {
+            return .init(analyzedString: "Decreased " + String(format: "%.f", change) + "%", isIncrease: false)
+            
+        } else if change == 0 {
+            return .init(analyzedString: "No change", isIncrease: false)
+        } else {
+            return .init(analyzedString: "Increased " + String(format: "%.f", change) + "%", isIncrease: true)
+        }
+    }
+    
+    func TFRToRecover(_ array: [ResultModel]) -> Double {
+        let firstPopulation = Double(array[0].population)
+        let lastPopulation = Double(array[array.count - 1].population)
+        
+        return pow(1024 * (firstPopulation / lastPopulation), 1/10)
     }
 }
 
