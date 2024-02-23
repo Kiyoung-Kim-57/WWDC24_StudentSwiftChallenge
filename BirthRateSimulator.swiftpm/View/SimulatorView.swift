@@ -14,6 +14,7 @@ struct SimulatorView: View {
     @State var genCount: Int = 1
     @State var isCalculating: Bool = false
     @State var repeatCount: Int = 0
+    @State var isShowAlert: Bool = false
     
     var body: some View {
         ZStack{
@@ -25,7 +26,8 @@ struct SimulatorView: View {
                     totalFertilityRate: $totalFertilityRate,
                     isCalculating: $isCalculating,
                     repeatCount: $repeatCount,
-                    genCount: $genCount
+                    genCount: $genCount,
+                    isShowAlert: $isShowAlert
                 )
                 
                 .onAppear{
@@ -214,6 +216,7 @@ private struct CalculatorView: View {
     @Binding var isCalculating: Bool //Trigger of animation
     @Binding var repeatCount: Int
     @Binding var genCount: Int
+    @Binding var isShowAlert: Bool
     @State private var isShowPopulationPopUp: Bool = false
     @State private var isShowTFRPopUp: Bool = false
     @State var result: CGFloat = 0
@@ -348,34 +351,40 @@ private struct CalculatorView: View {
             .padding(.leading, UIScreen.width * 0.1)
             //Simulation Start Button
             Button(action: {
-                //Turn on the simulating continuing check
-                resultViewModel.isSimulating = true
-                //Add First Generation resultModel
-                if genCount == 1 {
-                    resultModel = .init(nthGen: genCount ,population: Int(population), totalFertilityRate: totalFertilityRate)
-                    resultViewModel.resultArray.append(resultModel)
-                }
-                //Add generationCount number
-                genCount += 1
-                //Trigger of start of animation
-                isCalculating.toggle()
-                //To prevent playing animation twice
-                repeatCount = 0
-                //After 7 Secs reset values for next step
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 7, execute: {
-                    repeatCount += 1
+                if genCount < 11 {
+                    //Turn on the simulating continuing check
+                    resultViewModel.isSimulating = true
+                    //Add First Generation resultModel
+                    if genCount == 1 {
+                        resultModel = .init(nthGen: genCount ,population: Int(population), totalFertilityRate: totalFertilityRate)
+                        resultViewModel.resultArray.append(resultModel)
+                    }
+                    
+                    //Add generationCount number
+                    genCount += 1
+                    //Trigger of start of animation
                     isCalculating.toggle()
-                    result = (population / 2) * totalFertilityRate
-                    population = result
-                    //Store tmpPopulation and tmpRate value
-                    resultViewModel.tmpPopulation = population
-                    resultViewModel.tmpRate = totalFertilityRate
-                    resultViewModel.tmpGen = genCount
-                    //Append present population and TFR value in ViewModel
-                    resultModel = .init(nthGen: genCount ,population: Int(population), totalFertilityRate: totalFertilityRate)
-                    resultViewModel.resultArray.append(resultModel)
-                })
-                
+                    //To prevent playing animation twice
+                    repeatCount = 0
+                    //After 7 Secs reset values for next step
+                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 7, execute: {
+                        repeatCount += 1
+                        isCalculating.toggle()
+                        result = (population / 2) * totalFertilityRate
+                        population = result
+                        //Store tmpPopulation and tmpRate value
+                        resultViewModel.tmpPopulation = population
+                        resultViewModel.tmpRate = totalFertilityRate
+                        resultViewModel.tmpGen = genCount
+                        //Add Total Fertility Rate to previous generation data
+                        resultViewModel.resultArray[genCount - 2].totalFertilityRate = totalFertilityRate
+                        //Append present population and TFR value in ViewModel
+                        resultModel = .init(nthGen: genCount ,population: Int(population), totalFertilityRate: 0)
+                        resultViewModel.resultArray.append(resultModel)
+                    })
+                } else {
+                    isShowAlert = true
+                }
             }, label: {
                 Text("Start Simulation")
                     .frame(width: UIScreen.width * 0.23)
@@ -387,6 +396,15 @@ private struct CalculatorView: View {
                         RoundedRectangle(cornerRadius: 10)
                             .foregroundStyle(Color.black.opacity(0.7))
                     }
+                    .alert("Alert", isPresented: $isShowAlert, actions: {
+                        Button{
+                            isShowAlert = false
+                        } label: {
+                            Text("close")
+                        }
+                    }, message: {
+                        Text("Simulation case can not be more than 10 cases")
+                    })
             })
             .padding(.bottom, 40)
             .padding(.leading, UIScreen.width * 0.1)

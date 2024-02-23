@@ -11,6 +11,7 @@ import Charts
 struct ResultView: View {
     @ObservedObject var resultViewModel: ResultViewModel
     @State private var screenRatioSize = UIScreen.width * 0.001
+    
     let strideBy: Double = 6
     
     var maxPopulation: Int {
@@ -29,6 +30,10 @@ struct ResultView: View {
         } catch {
             return 2
         }
+    }
+    
+    var chartWidth: Int {
+        return Int(UIScreen.width) / range
     }
     
     var numberFormatter2: NumberFormatter {
@@ -98,72 +103,83 @@ struct ResultView: View {
                 }
                 
                 HStack{
-                    Chart{
-                        ForEach(resultViewModel.resultArray, id: \.self) { data in
-                            
-                            BarMark(
-                                x: .value("XValue", data.nthGen),
-                                y: .value("YValue", data.population),
-                                width: 50
-                            )
-                            .annotation(position: .trailing){
-                                VStack(alignment: .leading){
-                                    Text(String(format:"%.2f", data.totalFertilityRate))
-                                        .foregroundStyle(Color.lineColor)
-                                        .font(.system(size: screenRatioSize * 10))
-                                        .padding(.bottom, 5)
-                                    Text("\(data.population)")
-                                        .foregroundStyle(Color.cyan)
-                                        .font(.system(size: screenRatioSize * 10))
+                    VStack{
+                        Chart{
+                            ForEach(resultViewModel.resultArray, id: \.self) { data in
+                                
+                                LineMark(
+                                    x: .value("XValue2", data.nthGen),
+                                    y: .value("YValue2", (data.totalFertilityRate * (1/maxRate) * Double(maxPopulation)) )
+                                )
+                                .foregroundStyle(Color.lineColor)
+                                
+                                BarMark(
+                                    x: .value("XValue", data.nthGen),
+                                    y: .value("YValue", data.population),
+                                    width: .inset(15)
+                                )
+                                .annotation(position: .trailing){
+                                    VStack(alignment: .leading){
+                                        Text(String(format:"%.2f", data.totalFertilityRate))
+                                            .foregroundStyle(Color.lineColor)
+                                            .font(.system(size: screenRatioSize * 10))
+                                            .padding(.bottom, 5)
+                                        Text("\(data.population)")
+                                            .foregroundStyle(Color.cyan)
+                                            .font(.system(size: screenRatioSize * 10))
+                                    }
                                 }
+                                .foregroundStyle(Color.cyan.opacity(0.6))
+                                
+                               
+                                
                             }
-                            .foregroundStyle(Color.cyan)
                             
-                            LineMark(
-                                x: .value("XValue2", data.nthGen),
-                                y: .value("YValue2", (data.totalFertilityRate * (1/maxRate) * Double(maxPopulation)) )
-                            )
-                            .foregroundStyle(Color.lineColor)
+                            
+                            
                         }
-                    }
-                    .chartForegroundStyleScale(["Total Fertility Rate" : Color.lineColor, "Population": Color.cyan])
-                    .chartLegend(.visible)
-                    .chartXScale(domain: 0...range+1)
-                    .chartYAxis{
-                        AxisMarks(values: .automatic(desiredCount: 4)) {
-                            value in
-                            let DoubleIndex: Double = Double(value.count - 1)
-                            let converter: Double = Double(maxPopulation) / DoubleIndex
-                            AxisValueLabel(numberFormatter2.string(for: Int(converter * Double(value.index)))!)
+                        .chartForegroundStyleScale(["Total Fertility Rate" : Color.lineColor, "Population": Color.cyan])
+                        .chartLegend(.visible)
+                        .chartXScale(domain: 0...range+1)
+                        .chartYAxis{
+                            AxisMarks(values: .automatic(desiredCount: 4)) {
+                                value in
+                                let DoubleIndex: Double = Double(value.count - 1)
+                                let converter: Double = Double(maxPopulation) / DoubleIndex
+                                AxisValueLabel(numberFormatter2.string(for: Int(converter * Double(value.index)))!)
+                            }
+                            AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { value in
+                                let DoubleIndex: Double = Double(value.count - 1)
+                                let converter: Double = maxRate / DoubleIndex
+                                AxisValueLabel("\( String(format: "%.2f", converter * Double(value.index)))")
+                            }
                         }
-                        AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { value in
-                            let DoubleIndex: Double = Double(value.count - 1)
-                            let converter: Double = maxRate / DoubleIndex
-                            AxisValueLabel("\( String(format: "%.2f", converter * Double(value.index)))")
+                        .chartYAxisLabel(position: .leading, alignment: .topLeading) {
+                            Text("Total Fertility Rate (Line Graph)")
+                                .bold()
+                                .font(.system(size: 15))
                         }
-                    }
-                    .chartYAxisLabel(position: .leading, alignment: .topLeading) {
-                        Text("Total Fertility Rate (Line Graph)")
-                            .bold()
-                            .font(.system(size: 15))
-                    }
-                    .chartYAxisLabel(position: .trailing, alignment: .topLeading) {
-                        Text("Population (Bar Graph)")
-                            .bold()
-                            .font(.system(size: 15))
-                    }
-                    .frame(width: UIScreen.width * 0.55, height: UIScreen.height * 0.65)
-                    .background{
-                        HStack{
-                            RoundedRectangle(cornerRadius: 50)
-                                .frame(width:  UIScreen.width * 0.9, height: UIScreen.height * 1.01)
-                                .foregroundStyle(Color.boxColor)
-                            //TODO: delete opacity and set background color
-                                .offset(x: -UIScreen.width * 0.1)
-                            Spacer()
+                        .chartYAxisLabel(position: .trailing, alignment: .topLeading) {
+                            Text("Population (Bar Graph)")
+                                .bold()
+                                .font(.system(size: 15))
                         }
+                        .frame(width: UIScreen.width * 0.55, height: UIScreen.height * 0.65)
+                        .background{
+                            HStack{
+                                RoundedRectangle(cornerRadius: 50)
+                                    .frame(width:  UIScreen.width * 0.9, height: UIScreen.height * 1.07)
+                                    .foregroundStyle(Color.boxColor)
+                                //TODO: delete opacity and set background color
+                                    .offset(x: -UIScreen.width * 0.1)
+                                Spacer()
+                            }
+                        }
+                        .padding(.leading, screenRatioSize * 18)
+                        Text("⚠️ Last Value of TFR is always 0.0 because there is no input data for last TFR")
+                            .padding(.top, 30)
+                            
                     }
-                    .padding(.leading, screenRatioSize * 18)
                     Spacer()
                    
                     
