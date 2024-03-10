@@ -51,8 +51,10 @@
 		60AC5C632B317C910092C351 /* StellaPuzzle */ = {
 			isa = PBXGroup;
 			children = (
+				60AC5C742B317F9D0092C351 /* Model */,
+				60AC5C732B317F970092C351 /* ViewModel */,
+				60AC5C722B317F910092C351 /* View */,
 				60AC5C642B317C910092C351 /* StellaPuzzleApp.swift */,
-				60AC5C662B317C910092C351 /* ContentView.swift */,
 				60AC5C682B317C930092C351 /* Assets.xcassets */,
 				60AC5C6A2B317C930092C351 /* Preview Content */,
 			);
@@ -65,6 +67,28 @@
 				60AC5C6B2B317C930092C351 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		60AC5C722B317F910092C351 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				60AC5C662B317C910092C351 /* ContentView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		60AC5C732B317F970092C351 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		60AC5C742B317F9D0092C351 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
