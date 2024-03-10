@@ -49,6 +49,7 @@ struct ResultView: View {
             ZStack{
                 HStack{
                     Spacer()
+//
                     VStack(alignment: .leading, spacing: 15){
                       Text("Result Analysis")
                             .font(.system(size: screenRatioSize * 30))

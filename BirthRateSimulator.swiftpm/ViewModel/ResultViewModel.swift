@@ -13,7 +13,7 @@ class ResultViewModel: ObservableObject {
         //Sample
 //        .init(nthGen: 1, population: 10000, totalFertilityRate: 0.7),
 //        .init(nthGen: 2, population: 3500, totalFertilityRate: 0.6),
-//        .init(nthGen: 3, population: 3300, totalFertilityRate: 0.4),
+//        .init(nthGen: 3, population: 3300, totalFertilityRate: 0.4)
 //        .init(nthGen: 4, population: 10000, totalFertilityRate: 0.7),
 //        .init(nthGen: 5, population: 3500, totalFertilityRate: 0.6),
 //        .init(nthGen: 6, population: 3300, totalFertilityRate: 0.4),
